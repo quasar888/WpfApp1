@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System;
 using System.Threading;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -21,6 +20,8 @@ using  System.Net.Http;
 using System.IO;
 using RestSharp;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace WpfApp1
 {
@@ -78,30 +79,32 @@ namespace WpfApp1
             var response = await client.ExecuteGetAsync(request);
             Console.WriteLine(response.ResponseStatus.ToString());
 
-            var res = Regex.Match(
-                    response.Content.ToString(),
-                    string.Format("{0}(.*){1}", "shortForecast", ","))
-                .Groups[1].Value;
-            res.SkipWhile(c => c!='"');
-            Console.WriteLine(res.ToString());
-            Console.ReadLine();
+            JObject json = JObject.Parse(response.Content.ToString());
+
+            var x = JsonConvert.DeserializeObject<JObject>(response.Content.ToString());
+
+            int geography = new Random().Next(13);
+            var xx = x["properties"]["periods"][geography]["shortForecast"];
 
             tomorrowsWeather.Dispatcher.BeginInvoke(
                 DispatcherPriority.Normal,
                 new OneArgDelegate(UpdateUserInterface),
-                res);
+                xx.ToString());
         }
 
         private void UpdateUserInterface(string res)
         {
             //Set the weather image
-            if (res.Contains("Cloudy") )
+            if (res.Contains("Cloudy") || res.Contains("rainy")
+                || res.Contains("Showers")
+                || res.Contains("rainy")
+                || res.Contains("Drizzle"))
             {
                 weatherIndicatorImage.Source = (ImageSource)Resources[
                     "RainingImageSource"];
               
             }
-            else if (res == "rainy")
+            else 
             {
                 weatherIndicatorImage.Source = (ImageSource)Resources[
                   "SunnyImageSource"];
