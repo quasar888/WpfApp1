@@ -74,15 +74,9 @@ namespace WpfApp1
         {
             Thread.Sleep(2000);
             var client = new RestClient("https://api.weather.gov/gridpoints/TOP/31,80/forecast");
-
             var request = new RestRequest();
             var response = await client.ExecuteGetAsync(request);
-            Console.WriteLine(response.ResponseStatus.ToString());
-
-            JObject json = JObject.Parse(response.Content.ToString());
-
             var x = JsonConvert.DeserializeObject<JObject>(response.Content.ToString());
-
             int geography = new Random().Next(13);
             var xx = x["properties"]["periods"][geography]["shortForecast"];
 
